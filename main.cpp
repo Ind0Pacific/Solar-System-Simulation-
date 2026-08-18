@@ -1,17 +1,20 @@
 #include "Common.h"
 #include "Shader.h"
 #include "Sphere.h"
+#include "orbit.h"
 #include "Physics.h"
 #include <glm/gtc/type_ptr.hpp>
 
-int main() {
+int main()
+{
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Solar System Simulation | Movement: W, A, S, D | Exit: ESC", NULL, NULL);
-    if (!window) {
+    if (!window)
+    {
         glfwTerminate();
         return -1;
     }
@@ -33,9 +36,11 @@ int main() {
     unsigned int colorLoc = glGetUniformLocation(shaderProgram, "color");
 
     Sphere unitSphere(36, 18, 1.0f);
+    Orbit orbitRing(100);
     initSolarSystem();
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -46,19 +51,39 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(shaderProgram);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++)
+        {
             updatePhysics();
         }
 
         int currentWidth, currentHeight;
         glfwGetFramebufferSize(window, &currentWidth, &currentHeight);
-        if (currentHeight == 0) currentHeight = 1;
+        if (currentHeight == 0)
+            currentHeight = 1;
         float aspectRatio = (float)currentWidth / (float)currentHeight;
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-        for (const auto& planet : planets) {
+        for (const auto &planet : planets)
+        {
+            float distance = glm::length(planet.pos);
+
+            if (distance < 1.0f)
+                continue;
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(distance));
+
+            glm::mat4 mvp = projection * view * model;
+            glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+            glUniform3f(colorLoc, 0.2f, 0.2f, 0.2f);
+            orbitRing.draw();
+        }
+
+        for (const auto &planet : planets)
+        {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, planet.pos);
             model = glm::scale(model, glm::vec3(planet.radius));
@@ -69,11 +94,9 @@ int main() {
 
             unitSphere.draw();
         }
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
     glfwTerminate();
     return 0;
 }
