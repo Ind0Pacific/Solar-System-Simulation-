@@ -64,21 +64,22 @@ int main()
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::vec3 sunPos = planets[0].pos;
 
-        for (const auto &planet : planets)
+        for (size_t i = 1; i < planets.size(); ++i)
         {
-            float distance = glm::length(planet.pos);
-
-            if (distance < 1.0f)
-                continue;
+            const auto &planet = planets[i];
+            float distance = glm::distance(planet.pos, sunPos);
 
             glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, sunPos);
             model = glm::scale(model, glm::vec3(distance));
 
             glm::mat4 mvp = projection * view * model;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
             glUniform3f(colorLoc, 0.2f, 0.2f, 0.2f);
+
             orbitRing.draw();
         }
 
