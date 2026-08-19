@@ -35,7 +35,7 @@ inline void updatePhysics() {
         }
     }
 
-    for (int i = 0; i < n; ++i) {
+    for (int i = 1; i < n; ++i) {
         glm::vec3 acceleration = forces[i] / planets[i].mass;
         planets[i].vel += acceleration * TIME_STEP;
         planets[i].pos += planets[i].vel * TIME_STEP;
