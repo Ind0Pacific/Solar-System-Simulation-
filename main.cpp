@@ -86,7 +86,10 @@ int main()
         for (const auto &planet : planets)
         {
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, planet.pos);
+            
+            model = glm::translate(model, planet.pos);    
+            model = glm::rotate(model, glm::radians(20.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, planet.currentAngle, glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::scale(model, glm::vec3(planet.radius));
 
             glm::mat4 mvp = projection * view * model;
