@@ -4,6 +4,7 @@
 #include "orbit.h"
 #include "Physics.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <string>
 
 int main()
 {
@@ -39,6 +40,9 @@ int main()
     Orbit orbitRing(100);
     initSolarSystem();
 
+    float simulatedTime = 0.0f;
+    const float EARTH_YEAR_DURATION = 4.0212f;
+
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = glfwGetTime();
@@ -54,7 +58,15 @@ int main()
         for (int i = 0; i < 10; i++)
         {
             updatePhysics();
+            simulatedTime += TIME_STEP;
         }
+
+        int currentYear = static_cast<int>(simulatedTime / EARTH_YEAR_DURATION);
+
+        std::string title = "Solar System Simulation | Year: " + std::to_string(currentYear) +
+                            " | Movement: W, A, S, D | Exit: ESC";
+
+        glfwSetWindowTitle(window, title.c_str());
 
         int currentWidth, currentHeight;
         glfwGetFramebufferSize(window, &currentWidth, &currentHeight);
@@ -86,8 +98,8 @@ int main()
         for (const auto &planet : planets)
         {
             glm::mat4 model = glm::mat4(1.0f);
-            
-            model = glm::translate(model, planet.pos);    
+
+            model = glm::translate(model, planet.pos);
             model = glm::rotate(model, glm::radians(20.0f), glm::vec3(0.0f, 0.0f, 1.0f));
             model = glm::rotate(model, planet.currentAngle, glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::scale(model, glm::vec3(planet.radius));
