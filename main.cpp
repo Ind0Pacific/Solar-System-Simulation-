@@ -3,6 +3,7 @@
 #include "Sphere.h"
 #include "orbit.h"
 #include "Physics.h"
+#include "Starfield.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
@@ -38,6 +39,7 @@ int main()
 
     Sphere unitSphere(36, 18, 1.0f);
     Orbit orbitRing(100);
+    Starfield stars(5000);
     initSolarSystem();
 
     float simulatedTime = 0.0f;
@@ -77,6 +79,14 @@ int main()
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glm::vec3 sunPos = planets[0].pos;
+
+        glm::mat4 starModel = glm::mat4(1.0f);
+        glm::mat4 starMVP = projection * view * starModel;
+        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(starMVP));
+        
+
+        glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f); 
+        stars.draw();
 
         for (size_t i = 1; i < planets.size(); ++i)
         {
