@@ -45,12 +45,19 @@ int main()
     float simulatedTime = 0.0f;
     const float EARTH_YEAR_DURATION = 4.0212f;
 
+    const float TARGET_FPS = 60.0f;
+    const float TARGET_FRAME_TIME = 1.0f / TARGET_FPS;
+
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
 
+        if (deltaTime < TARGET_FRAME_TIME) {
+            continue; 
+        }
+
+        lastFrame = currentFrame;
         processInput(window);
 
         glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
@@ -87,20 +94,24 @@ int main()
 
         glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f); 
         stars.draw();
+ 
 
-        for (size_t i = 1; i < planets.size(); ++i)
-        {
-            const auto &planet = planets[i];
-            float distance = glm::distance(planet.pos, sunPos);
-
+        for (size_t i = 1; i < planets.size(); ++i) {
+            const auto& planet = planets[i];
+            
+            glm::vec3 orbitCenter = sunPos;
+            if (i == 4) {
+                orbitCenter = planets[3].pos;
+            }
+            float distance = glm::distance(planet.pos, orbitCenter);
+            
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, sunPos);
-            model = glm::scale(model, glm::vec3(distance));
+            model = glm::translate(model, orbitCenter);
+            model = glm::scale(model, glm::vec3(distance)); 
 
             glm::mat4 mvp = projection * view * model;
             glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
-            glUniform3f(colorLoc, 0.2f, 0.2f, 0.2f);
+            glUniform3f(colorLoc, 0.2f, 0.2f, 0.2f); 
 
             orbitRing.draw();
         }
